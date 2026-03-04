@@ -63,6 +63,7 @@ export const TabacariaProvider = ({ children }: { children: React.ReactNode }) =
 
     const newSales = [{
       id: Date.now(),
+      productId: product.id,
       productName: product.name,
       total: salePrice,
       discount: useBadgeDiscount,
@@ -76,8 +77,51 @@ export const TabacariaProvider = ({ children }: { children: React.ReactNode }) =
     return true;
   };
 
+  const deleteSale = (saleId: number) => {
+    const sale = sales.find(s => s.id === saleId);
+    if (!sale) return;
+
+    if (!confirm("Tem certeza que deseja remover esta venda? O estoque e o caixa serão revertidos.")) return;
+
+    // Calcular valores originais para reverter o saldo
+    const salePrice = sale.total;
+    const useBadgeDiscount = sale.discount;
+    const valorBadgeDaVenda = useBadgeDiscount ? salePrice * 0.20 : 0;
+    const valorParaSocios = useBadgeDiscount ? salePrice * 0.80 : salePrice;
+    const sharePerPartner = valorParaSocios / 4;
+
+    const newPartners = {
+      s1: partners.s1 - sharePerPartner,
+      s2: partners.s2 - sharePerPartner,
+      s3: partners.s3 - sharePerPartner,
+      s4: partners.s4 - sharePerPartner,
+      badge: partners.badge - valorBadgeDaVenda
+    };
+
+    // Reverter o estoque (tenta buscar pelo ID novo, ou faz fallback pelo nome para vendas antigas)
+    const newProducts = [...products];
+    const productIndex = newProducts.findIndex(p => p.id === sale.productId || p.name === sale.productName);
+    
+    if (productIndex !== -1) {
+      newProducts[productIndex] = {
+        ...newProducts[productIndex],
+        stock: newProducts[productIndex].stock + 1 // Devolve 1 item ao estoque
+      };
+    }
+
+    // Remover a venda do histórico
+    const newSales = sales.filter(s => s.id !== saleId);
+
+    setPartners(newPartners);
+    setProducts(newProducts);
+    setSales(newSales);
+    saveData(newPartners, newProducts, newSales);
+  };
+
   return (
-    <TabacariaContext.Provider value={{ partners, products, sales, addProduct, deleteProduct, updateProduct, registerSale }}>
+    <TabacariaContext.Provider value={{ 
+      partners, products, sales, addProduct, deleteProduct, updateProduct, registerSale, deleteSale 
+    }}>
       {children}
     </TabacariaContext.Provider>
   );

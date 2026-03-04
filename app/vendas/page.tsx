@@ -10,11 +10,12 @@ import {
   CheckCircle2, 
   ArrowUpRight,
   Hexagon,
-  ChevronDown
+  ChevronDown,
+  Trash2
 } from 'lucide-react';
 
 export default function Vendas() {
-  const { products, sales, registerSale } = useTabacaria();
+  const { products, sales, registerSale, deleteSale } = useTabacaria();
   const [showModal, setShowModal] = useState(false);
   const [selectedId, setSelectedId] = useState("");
   const [useBadge, setUseBadge] = useState(false);
@@ -110,13 +111,26 @@ export default function Vendas() {
                   <p className="font-mono text-[10px] font-bold text-gray-500 mt-1">{s.date}</p>
                 </div>
               </div>
-              <div className="text-right flex flex-col items-end gap-1.5">
-                <p className="font-black text-white text-lg tracking-tight">R$ {s.total.toFixed(2)}</p>
-                {s.discount && (
-                  <span className="bg-[#AB38F7]/20 text-[#AB38F7] px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-[0.1em]">
-                    Badge
-                  </span>
-                )}
+              
+              {/* 3. Agrupe o preço e o novo botão de deletar em uma div flex */}
+              <div className="flex items-center gap-5">
+                <div className="text-right flex flex-col items-end gap-1.5">
+                  <p className="font-black text-white text-lg tracking-tight">R$ {s.total.toFixed(2)}</p>
+                  {s.discount && (
+                    <span className="bg-[#AB38F7]/20 text-[#AB38F7] px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-[0.1em]">
+                      Badge
+                    </span>
+                  )}
+                </div>
+
+                {/* BOTÃO DE DELETAR */}
+                <button 
+                  onClick={() => deleteSale(s.id)}
+                  className="text-gray-600 hover:text-red-500 transition-colors p-2 opacity-30 hover:opacity-100"
+                  title="Remover Venda"
+                >
+                  <Trash2 size={20} />
+                </button>
               </div>
             </div>
           ))}
